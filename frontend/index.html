@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>InsightFlow AI — Agentic Data Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.35.2/plotly.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/14.1.3/marked.min.js"></script>
+<style>
+:root{--bg:#080c14;--surface:#0d1321;--surface2:#111827;--surface3:#1a2234;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);--text:#f0f4ff;--muted:#8b97b0;--accent:#4f9cf9;--accent2:#7c3aed;--teal:#14b8a6;--coral:#f43f5e;--amber:#f59e0b;--green:#22c55e;--font-display:'Syne',sans-serif;--font-body:'Inter',sans-serif;--font-mono:'IBM Plex Mono',monospace;--radius:12px;--radius-sm:8px;--sidebar-w:300px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);overflow:hidden;-webkit-font-smoothing:antialiased}
+#app{display:flex;height:100vh}
+.grid-bg{position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(rgba(79,156,249,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(79,156,249,0.03) 1px,transparent 1px);background-size:40px 40px}
+.glow-orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(120px);opacity:.12}
+.glow-1{width:600px;height:600px;background:#4f9cf9;top:-200px;left:-100px}
+.glow-2{width:400px;height:400px;background:#7c3aed;bottom:0;right:0}
+
+/* ── Sidebar ── */
+#sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:10;overflow:hidden;transition:transform .3s}
+.sidebar-header{padding:20px 16px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:19px;font-weight:800;letter-spacing:-.5px}
+.logo-icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#4f9cf9,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.logo-sub{font-size:10px;color:var(--muted);margin-top:1px;font-weight:400;font-family:var(--font-body)}
+.sidebar-actions{display:flex;gap:6px;padding:10px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
+.sidebar-btn{flex:1;padding:8px 10px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;border:1px solid var(--border2);background:transparent;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:5px}
+.sidebar-btn:hover{background:var(--surface2);color:var(--text)}
+.sidebar-btn.primary{background:rgba(79,156,249,0.12);border-color:rgba(79,156,249,0.25);color:var(--accent)}
+.sidebar-btn.primary:hover{background:rgba(79,156,249,0.22)}
+.sidebar-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.sidebar-tab{flex:1;padding:9px 6px;font-size:11px;font-weight:500;text-align:center;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:all .15s}
+.sidebar-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.sidebar-content{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.sidebar-section-label{padding:12px 16px 6px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+
+/* Dataset panel */
+.dataset-panel{margin:8px 12px;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.dataset-name{font-size:13px;font-weight:500;margin-bottom:8px;display:flex;align-items:center;gap:6px;word-break:break-all}
+.dataset-stat{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);padding:3px 0}
+.dataset-stat span:last-child{color:var(--text);font-family:var(--font-mono)}
+.quality-bar{height:3px;background:var(--border);border-radius:2px;margin-top:8px;overflow:hidden}
+.quality-fill{height:100%;border-radius:2px;transition:width .6s ease}
+
+/* Schema explorer */
+.schema-table-label{padding:10px 14px 4px;font-size:11px;color:var(--muted);font-weight:500;display:flex;align-items:center;gap:6px}
+.schema-col-row{display:flex;align-items:center;gap:8px;padding:6px 14px;font-size:12px;border-bottom:1px solid rgba(255,255,255,0.02);cursor:default}
+.schema-col-row:hover{background:rgba(255,255,255,0.02)}
+.schema-col-name{flex:1;color:var(--text);font-family:var(--font-mono);font-size:11px}
+.schema-col-type{font-size:9px;font-weight:600;text-transform:uppercase;padding:2px 6px;border-radius:4px}
+.type-currency{background:rgba(34,197,94,0.15);color:var(--green)}
+.type-numeric{background:rgba(79,156,249,0.15);color:var(--accent)}
+.type-datetime{background:rgba(245,158,11,0.15);color:var(--amber)}
+.type-category{background:rgba(124,58,237,0.15);color:#a78bfa}
+.type-text{background:var(--surface3);color:var(--muted)}
+.nullable-dot{width:5px;height:5px;border-radius:50%;background:var(--coral);flex-shrink:0}
+.nullable-dot.ok{background:var(--green)}
+
+/* History */
+.history-item{margin:2px 8px;padding:9px 10px;border-radius:var(--radius-sm);font-size:12px;color:var(--muted);cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:7px;line-height:1.4}
+.history-item:hover{background:var(--surface2);color:var(--text)}
+.history-item.active{background:rgba(79,156,249,0.1);color:var(--accent)}
+.history-class{font-size:9px;font-weight:600;padding:2px 5px;border-radius:3px;flex-shrink:0;margin-top:1px}
+.history-q{overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+
+/* Stats panel */
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;border-bottom:1px solid rgba(255,255,255,0.03);font-size:12px}
+.stat-row-val{font-family:var(--font-mono);font-size:12px;color:var(--accent)}
+
+/* ── Main ── */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;z-index:1}
+
+/* ── Upload zone ── */
+#upload-zone{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column}
+.upload-hero{text-align:center;max-width:580px;padding:40px 24px}
+.upload-hero h1{font-family:var(--font-display);font-size:46px;font-weight:800;line-height:1.1;letter-spacing:-2px;background:linear-gradient(135deg,#f0f4ff 0%,#4f9cf9 50%,#7c3aed 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:14px}
+.upload-hero p{color:var(--muted);font-size:15px;line-height:1.6;margin-bottom:32px}
+.drop-zone{border:2px dashed rgba(79,156,249,0.3);border-radius:20px;padding:44px 40px;text-align:center;cursor:pointer;transition:all .3s;background:rgba(79,156,249,0.03);position:relative}
+.drop-zone:hover,.drop-zone.dragover{border-color:rgba(79,156,249,0.7);background:rgba(79,156,249,0.07);transform:translateY(-2px)}
+.drop-icon{font-size:44px;margin-bottom:14px}
+.drop-title{font-family:var(--font-display);font-size:17px;font-weight:600;margin-bottom:6px}
+.drop-sub{font-size:13px;color:var(--muted);margin-bottom:18px}
+.file-types{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.file-badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500;font-family:var(--font-mono);background:var(--surface2);border:1px solid var(--border2);color:var(--muted)}
+.upload-btn{display:inline-flex;align-items:center;gap:8px;padding:11px 26px;border-radius:var(--radius-sm);background:linear-gradient(135deg,#4f9cf9,#7c3aed);color:#fff;font-size:13px;font-weight:600;cursor:pointer;border:none;margin-top:18px;transition:opacity .2s,transform .2s}
+.upload-btn:hover{opacity:.9;transform:translateY(-1px)}
+#file-input{display:none}
+.feature-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:28px}
+.feature-pill{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:500;background:var(--surface2);border:1px solid var(--border);color:var(--muted);display:flex;align-items:center;gap:4px}
+.upload-notice{margin-top:12px;font-size:12px;color:var(--amber);display:none}
+
+/* ── Chat ── */
+#chat-zone{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#messages{flex:1;overflow-y:auto;padding:20px 28px;display:flex;flex-direction:column;gap:20px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+#messages::-webkit-scrollbar{width:4px}
+#messages::-webkit-scrollbar-track{background:transparent}
+#messages::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* Messages */
+.msg{display:flex;gap:10px;max-width:920px;width:100%}
+.msg.user{align-self:flex-end;flex-direction:row-reverse}
+.msg.user .msg-content{background:rgba(79,156,249,0.1);border:1px solid rgba(79,156,249,0.2)}
+.msg-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:3px}
+.msg-avatar.ai{background:linear-gradient(135deg,#4f9cf9,#7c3aed)}
+.msg-avatar.user{background:var(--surface2);border:1px solid var(--border2)}
+.msg-content{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;font-size:13px;line-height:1.7;flex:1;min-width:0}
+.msg-text p{margin-bottom:6px}
+.msg-text p:last-child{margin-bottom:0}
+.msg-text ul,.msg-text ol{padding-left:20px;margin-bottom:6px}
+.msg-text li{margin-bottom:3px}
+.msg-text strong{color:var(--accent)}
+.msg-text h3{font-size:13px;margin:8px 0 4px}
+
+/* Badges */
+.msg-meta{display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.badge{padding:3px 7px;border-radius:20px;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;display:inline-flex;align-items:center;gap:3px}
+.badge-db{background:rgba(20,184,166,0.15);color:var(--teal);border:1px solid rgba(20,184,166,0.25)}
+.badge-web{background:rgba(245,158,11,0.15);color:var(--amber);border:1px solid rgba(245,158,11,0.25)}
+.badge-hybrid{background:rgba(124,58,237,0.15);color:#a78bfa;border:1px solid rgba(124,58,237,0.25)}
+.badge-forecast{background:rgba(244,63,94,0.15);color:var(--coral);border:1px solid rgba(244,63,94,0.25)}
+.badge-time{background:var(--surface2);color:var(--muted);border:1px solid var(--border);font-size:9px}
+
+/* SQL block */
+.sql-block{margin:10px 0;border-radius:var(--radius-sm);background:#0a0f1a;border:1px solid var(--border2);overflow:hidden}
+.sql-header{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;border-bottom:1px solid var(--border);font-size:10px;font-weight:500;color:var(--muted)}
+.sql-actions{display:flex;gap:4px}
+.sql-action-btn{cursor:pointer;color:var(--muted);transition:color .15s;background:none;border:none;font-size:10px;padding:2px 6px;border-radius:4px}
+.sql-action-btn:hover{color:var(--accent);background:rgba(79,156,249,0.1)}
+.sql-code{padding:12px 14px;font-family:var(--font-mono);font-size:11px;line-height:1.9;overflow-x:auto;color:#a5d6ff;white-space:pre}
+.sql-kw{color:#ff79c6}
+.sql-fn{color:#50fa7b}
+.sql-str{color:#f1fa8c}
+.sql-num{color:#bd93f9}
+
+/* Chart */
+.chart-container{margin:12px 0;border-radius:var(--radius);background:var(--surface2);border:1px solid var(--border);overflow:hidden}
+.chart-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);font-size:11px;font-weight:500;color:var(--muted)}
+
+/* Data table */
+.data-table-wrap{overflow-x:auto;margin:12px 0;border-radius:var(--radius);border:1px solid var(--border);max-height:280px;overflow-y:auto}
+.data-table{width:100%;border-collapse:collapse;font-size:11px}
+.data-table th{background:var(--surface2);padding:8px 12px;text-align:left;font-weight:500;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;z-index:1}
+.data-table td{padding:6px 12px;border-bottom:1px solid rgba(255,255,255,0.03);color:var(--text);font-family:var(--font-mono);font-size:10px}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tr:hover td{background:rgba(255,255,255,0.02)}
+.table-footer{padding:7px 12px;font-size:10px;color:var(--muted);border-top:1px solid var(--border);display:flex;justify-content:space-between;background:var(--surface2)}
+.export-btn{padding:3px 8px;border-radius:4px;background:rgba(79,156,249,0.1);border:1px solid rgba(79,156,249,0.2);color:var(--accent);font-size:10px;cursor:pointer;transition:all .15s}
+.export-btn:hover{background:rgba(79,156,249,0.2)}
+
+/* Stats row */
+.stats-row{display:flex;gap:8px;margin:10px 0;flex-wrap:wrap}
+.stat-card{flex:1;min-width:90px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);text-align:center}
+.stat-val{font-size:18px;font-weight:700;font-family:var(--font-display);color:var(--accent)}
+.stat-label{font-size:9px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
+
+/* Plan */
+.plan-list{margin:6px 0 12px;display:flex;flex-direction:column;gap:3px}
+.plan-item{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted)}
+.plan-num{width:16px;height:16px;border-radius:50%;background:rgba(79,156,249,0.15);color:var(--accent);font-size:9px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* Insight */
+.insight-block{margin-top:10px;padding:12px;background:rgba(20,184,166,0.07);border:1px solid rgba(20,184,166,0.2);border-radius:var(--radius-sm)}
+.insight-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--teal);margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.insight-text{font-size:12px;line-height:1.7;color:var(--text)}
+
+/* Clarification */
+.clarify-options{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.clarify-btn{padding:9px 12px;border-radius:var(--radius-sm);background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-size:12px;cursor:pointer;text-align:left;transition:all .15s;display:flex;align-items:center;gap:7px}
+.clarify-btn:hover{border-color:rgba(79,156,249,0.4);background:rgba(79,156,249,0.07);color:var(--accent)}
+.clarify-num{width:20px;height:20px;border-radius:50%;background:rgba(79,156,249,0.15);color:var(--accent);font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* Web results */
+.web-results{margin:10px 0}
+.web-section-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--amber);margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.web-result-item{padding:9px 11px;border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:5px;transition:border-color .15s}
+.web-result-item:hover{border-color:var(--border2)}
+.web-result-title{font-size:11px;font-weight:500;color:var(--accent);margin-bottom:2px}
+.web-result-url{font-size:9px;color:var(--muted);font-family:var(--font-mono);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.web-result-text{font-size:11px;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+/* Execution steps */
+.steps-toggle{cursor:pointer;color:var(--muted);font-size:11px;display:flex;align-items:center;gap:4px;margin-top:10px;user-select:none}
+.steps-toggle:hover{color:var(--text)}
+.steps-panel{margin-top:6px;padding:10px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border)}
+.step-item{display:flex;align-items:flex-start;gap:7px;padding:3px 0;font-size:10px;color:var(--muted)}
+.step-dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:3px}
+.step-dot.error{background:var(--coral)}
+.step-name{color:var(--text);font-weight:500}
+.step-detail{color:var(--muted);font-size:9px;font-family:var(--font-mono)}
+
+/* Forecast */
+.forecast-block{margin:10px 0;padding:12px;background:rgba(244,63,94,0.07);border:1px solid rgba(244,63,94,0.2);border-radius:var(--radius-sm)}
+.forecast-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--coral);margin-bottom:8px}
+.forecast-metric{display:flex;gap:14px;align-items:center}
+.f-val{font-size:22px;font-weight:700;font-family:var(--font-display)}
+.f-label{font-size:9px;color:var(--muted);margin-top:1px}
+.f-ci{font-size:11px;color:var(--muted);line-height:1.5;border-left:1px solid var(--border);padding-left:14px;flex:1}
+
+/* Loading */
+.thinking{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;padding:2px 0}
+.thinking-dots{display:flex;gap:4px}
+.thinking-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);animation:bounce 1.4s ease-in-out infinite}
+.thinking-dot:nth-child(2){animation-delay:.2s}
+.thinking-dot:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-7px)}}
+
+/* Progress overlay */
+.progress-overlay{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:14px 22px;z-index:100;min-width:280px;box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.progress-bar{height:3px;background:var(--border);border-radius:2px;margin-top:8px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#4f9cf9,#7c3aed);border-radius:2px;transition:width .3s ease}
+
+/* Error */
+.error-block{padding:10px 12px;background:rgba(244,63,94,0.08);border:1px solid rgba(244,63,94,0.25);border-radius:var(--radius-sm);font-size:12px;color:var(--coral)}
+
+/* ── Input area ── */
+#input-area{padding:12px 28px 20px;border-top:1px solid var(--border);background:var(--bg);flex-shrink:0}
+.suggestions{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;margin-bottom:10px;padding-bottom:2px;scrollbar-width:none}
+.suggestions::-webkit-scrollbar{display:none}
+.chip{padding:5px 11px;border-radius:20px;background:var(--surface);border:1px solid var(--border);font-size:11px;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0}
+.chip:hover{border-color:rgba(79,156,249,0.4);color:var(--accent)}
+.input-box{display:flex;gap:8px;align-items:flex-end;background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:10px 14px;transition:border-color .2s}
+.input-box:focus-within{border-color:rgba(79,156,249,0.5)}
+.input-table-sel{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;padding:4px 6px;font-family:var(--font-mono);cursor:pointer;display:none}
+#question-input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:var(--font-body);font-size:13px;line-height:1.6;resize:none;max-height:120px}
+#question-input::placeholder{color:var(--muted)}
+.input-actions{display:flex;gap:6px;align-items:center;flex-shrink:0}
+.input-action-btn{width:30px;height:30px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--muted);transition:all .15s}
+.input-action-btn:hover{border-color:var(--border2);color:var(--text)}
+.send-btn{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#4f9cf9,#7c3aed);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:opacity .2s,transform .2s}
+.send-btn:hover:not(:disabled){opacity:.85;transform:scale(.97)}
+.send-btn:disabled{opacity:.4;cursor:not-allowed}
+.input-hint{font-size:10px;color:var(--muted);margin-top:6px;text-align:center}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* Animations */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{animation:fadeUp .3s ease forwards}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;padding:10px 16px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);font-size:12px;color:var(--text);z-index:200;animation:fadeUp .3s ease;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.toast.success{border-color:rgba(34,197,94,0.3);color:var(--green)}
+.toast.error{border-color:rgba(244,63,94,0.3);color:var(--coral)}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="glow-orb glow-1"></div>
+<div class="glow-orb glow-2"></div>
+
+<div id="app">
+  <!-- ── Sidebar ── -->
+  <div id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-icon">⚡</div>
+        <div>InsightFlow AI<div class="logo-sub">Agentic Data Intelligence</div></div>
+      </div>
+    </div>
+    <div class="sidebar-actions">
+      <button class="sidebar-btn primary" onclick="newSession()">➕ New</button>
+      <button class="sidebar-btn" onclick="showTab('schema')" id="tab-schema-btn" style="display:none">📋 Schema</button>
+      <button class="sidebar-btn" onclick="showTab('stats')" id="tab-stats-btn" style="display:none">📊 Stats</button>
+    </div>
+    <div class="sidebar-tabs" id="sidebar-tabs" style="display:none">
+      <div class="sidebar-tab active" id="tab-dataset" onclick="switchTab('dataset')">Dataset</div>
+      <div class="sidebar-tab" id="tab-schema" onclick="switchTab('schema')">Schema</div>
+      <div class="sidebar-tab" id="tab-history" onclick="switchTab('history')">History</div>
+      <div class="sidebar-tab" id="tab-stats" onclick="switchTab('stats')">Stats</div>
+    </div>
+    <div class="sidebar-content">
+      <div id="panel-dataset"></div>
+      <div id="panel-schema" style="display:none"></div>
+      <div id="panel-history" style="display:none"></div>
+      <div id="panel-stats" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- ── Main ── -->
+  <div id="main">
+    <!-- Upload zone -->
+    <div id="upload-zone">
+      <div class="upload-hero">
+        <h1>Chat with your data.</h1>
+        <p>Upload any business dataset and ask questions in plain English.<br/>InsightFlow AI generates SQL, charts, forecasts, and insights — automatically.</p>
+        <div class="drop-zone" id="drop-zone"
+          ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)"
+          ondrop="handleDrop(event)" onclick="document.getElementById('file-input').click()">
+          <div class="drop-icon">📊</div>
+          <div class="drop-title">Drop your dataset here</div>
+          <div class="drop-sub">CSV · Excel · SQLite — up to 100 MB</div>
+          <div class="file-types">
+            <span class="file-badge">CSV</span>
+            <span class="file-badge">XLSX</span>
+            <span class="file-badge">SQLite</span>
+          </div>
+          <button class="upload-btn" onclick="event.stopPropagation();document.getElementById('file-input').click()">📂 Choose File</button>
+        </div>
+        <div class="upload-notice" id="backend-notice">⚠️ Backend not running on port 8000 — start your FastAPI server.</div>
+        <div class="feature-grid">
+          <div class="feature-pill">🧠 SQL Generation</div>
+          <div class="feature-pill">📈 Auto Charts</div>
+          <div class="feature-pill">🔮 Forecasting</div>
+          <div class="feature-pill">🌐 Web Search</div>
+          <div class="feature-pill">💡 Business Insights</div>
+          <div class="feature-pill">🔒 SQL Validation</div>
+          <div class="feature-pill">📋 Data Profiling</div>
+          <div class="feature-pill">💬 Context Memory</div>
+          <div class="feature-pill">🎯 Ambiguity Detection</div>
+          <div class="feature-pill">📉 Anomaly Flagging</div>
+        </div>
+      </div>
+      <input type="file" id="file-input" accept=".csv,.xlsx,.xls,.sqlite,.db" onchange="handleFileSelect(event)"/>
+    </div>
+
+    <!-- Chat zone -->
+    <div id="chat-zone" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+      <div id="messages"></div>
+      <div id="input-area">
+        <div class="suggestions" id="suggestions-row"></div>
+        <div class="input-box">
+          <select class="input-table-sel" id="table-selector" title="Active table" onchange="setActiveTable(this.value)"></select>
+          <textarea id="question-input" placeholder="Ask anything about your data…" rows="1"
+            onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+          <div class="input-actions">
+            <button class="input-action-btn" onclick="clearChat()" title="Clear chat">🗑️</button>
+            <button class="send-btn" id="send-btn" onclick="sendQuestion()" title="Send (Enter)">➤</button>
+          </div>
+        </div>
+        <div class="input-hint">Enter to send · Shift+Enter for new line · Ask follow-ups naturally</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── Config ───────────────────────────────────────────────────────────────────
+// Detect API base: if served through nginx proxy use relative /api, else localhost
+const API_BASE = (window.location.port === '80' || window.location.port === '')
+  ? '/api'
+  : 'http://localhost:8000/api';
+
+// ─── State ────────────────────────────────────────────────────────────────────
+let S = {
+  sessionId: null,
+  tables: [],
+  activeTable: null,
+  profileSummary: {},
+  schemaData: [],
+  history: [],
+  loading: false,
+  currentTab: 'dataset',
+};
+
+const SUGGESTIONS = [
+  'Show top 10 rows',
+  'Summarise this dataset',
+  'Key metrics overview',
+  'Show monthly trends',
+  'Find duplicate records',
+  'Forecast next 6 months',
+  'Top categories by revenue',
+  'Correlation between columns',
+  'Missing values report',
+  'Outlier detection',
+];
+
+// ─── Upload ───────────────────────────────────────────────────────────────────
+function handleDragOver(e) { e.preventDefault(); document.getElementById('drop-zone').classList.add('dragover'); }
+function handleDragLeave() { document.getElementById('drop-zone').classList.remove('dragover'); }
+function handleDrop(e) { e.preventDefault(); handleDragLeave(); const f = e.dataTransfer.files[0]; if (f) uploadFile(f); }
+function handleFileSelect(e) { const f = e.target.files[0]; if (f) uploadFile(f); }
+
+async function uploadFile(file) {
+  showProgress('Uploading dataset…', 10);
+  const fd = new FormData();
+  fd.append('file', file);
+  if (S.sessionId) fd.append('session_id', S.sessionId);
+
+  try {
+    updateProgress(35);
+    const res = await fetch(`${API_BASE}/upload/`, { method: 'POST', body: fd });
+    updateProgress(80);
+    if (!res.ok) { const e = await res.json(); throw new Error(e.detail || 'Upload failed'); }
+    const data = await res.json();
+    updateProgress(100);
+    setTimeout(() => {
+      hideProgress();
+      activateChatMode(data);
+    }, 400);
+  } catch (err) {
+    hideProgress();
+    toast('Upload failed: ' + err.message, 'error');
+  }
+}
+
+function activateChatMode(data) {
+  S.sessionId = data.session_id;
+  S.tables = data.tables;
+  S.profileSummary = data.profile_summary;
+  S.activeTable = data.tables[0]?.table_name || 'main';
+  S.schemaData = data.tables;
+
+  document.getElementById('upload-zone').style.display = 'none';
+  const cz = document.getElementById('chat-zone');
+  cz.style.display = 'flex';
+
+  // Sidebar
+  document.getElementById('sidebar-tabs').style.display = 'flex';
+  renderDatasetPanel(data);
+  renderSchemaPanel(data.tables);
+  renderSuggestions();
+
+  // Table selector
+  const sel = document.getElementById('table-selector');
+  if (data.tables.length > 1) {
+    sel.style.display = 'block';
+    sel.innerHTML = data.tables.map(t => `<option value="${t.table_name}">${t.table_name}</option>`).join('');
+  }
+
+  // Welcome message
+  addMessage('ai', buildWelcomeHTML(data));
+  document.getElementById('question-input').focus();
+}
+
+function buildWelcomeHTML(data) {
+  const { tables, profile_summary, filename } = data;
+  const t = tables[0] || {};
+  let h = `<div class="msg-meta">
+    <span class="badge badge-db">✅ Loaded</span>
+    <span class="badge badge-time">${esc(filename)}</span>
+    <span class="badge badge-time">📊 ${fmtNum(profile_summary.total_rows)} rows</span>
+  </div>
+  <p style="margin-bottom:10px">Your dataset is ready. Here's a quick summary:</p>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-val">${fmtNum(profile_summary.total_rows)}</div><div class="stat-label">Rows</div></div>
+    <div class="stat-card"><div class="stat-val">${profile_summary.total_columns}</div><div class="stat-label">Columns</div></div>
+    <div class="stat-card"><div class="stat-val">${profile_summary.total_tables}</div><div class="stat-label">Tables</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:${scoreColor(profile_summary.avg_quality_score)}">${profile_summary.avg_quality_score}</div><div class="stat-label">Quality</div></div>
+  </div>`;
+
+  if (t.column_types) {
+    const counts = {};
+    Object.values(t.column_types).forEach(v => counts[v] = (counts[v]||0)+1);
+    h += `<div style="margin-top:12px"><p style="font-size:11px;color:var(--muted);margin-bottom:6px">Column types detected in <strong style="color:var(--text)">${esc(t.table_name)}</strong>:</p>
+    <div style="display:flex;flex-wrap:wrap;gap:5px">`;
+    Object.entries(counts).forEach(([type, n]) => {
+      h += `<span class="schema-col-type type-${type}">${n} ${type}</span>`;
+    });
+    h += `</div></div>`;
+  }
+
+  h += `<p style="margin-top:12px;color:var(--muted);font-size:12px">Ask me anything — SQL queries, charts, trends, forecasts, or comparisons with external context. Try a suggestion below ↓</p>`;
+  return h;
+}
+
+// ─── Query ────────────────────────────────────────────────────────────────────
+async function sendQuestion(question, clarification) {
+  if (S.loading) return;
+  const input = document.getElementById('question-input');
+  const q = question || input.value.trim();
+  if (!q) return;
+
+  input.value = '';
+  autoResize(input);
+  clearSuggestions();
+
+  addMessage('user', `<p>${esc(q)}</p>`);
+  const thinkId = addThinking();
+  S.loading = true;
+  document.getElementById('send-btn').disabled = true;
+
+  try {
+    const res = await fetch(`${API_BASE}/query/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: S.sessionId, question: q, clarification_choice: clarification || null }),
+    });
+
+    if (!res.ok) { const e = await res.json(); throw new Error(e.detail || 'Query failed'); }
+    const data = await res.json();
+    removeThinking(thinkId);
+    renderAgentResponse(data, q);
+    addToHistory(q, data.classification);
+
+  } catch (err) {
+    removeThinking(thinkId);
+    addMessage('ai', `<div class="error-block">⚠️ ${esc(err.message)}</div>`);
+  } finally {
+    S.loading = false;
+    document.getElementById('send-btn').disabled = false;
+    updateStatsPanel();
+  }
+}
+
+function renderAgentResponse(data, originalQ) {
+  let h = '';
+
+  // Meta badges
+  h += '<div class="msg-meta">';
+  const bc = { DATABASE:'badge-db', WEB:'badge-web', HYBRID:'badge-hybrid' }[data.classification] || 'badge-db';
+  const bi = { DATABASE:'🗄️', WEB:'🌐', HYBRID:'🔗' }[data.classification] || '🗄️';
+  h += `<span class="badge ${bc}">${bi} ${data.classification}</span>`;
+  if (data.is_forecast) h += `<span class="badge badge-forecast">🔮 FORECAST</span>`;
+  if (data.is_ambiguous) h += `<span class="badge badge-web">❓ AMBIGUOUS</span>`;
+  if (data.total_time_ms) h += `<span class="badge badge-time">⚡ ${(data.total_time_ms/1000).toFixed(2)}s</span>`;
+  if (data.query_result?.cached) h += `<span class="badge badge-time">💾 CACHED</span>`;
+  h += '</div>';
+
+  // Error
+  if (data.error) {
+    h += `<div class="error-block">⚠️ ${esc(data.error)}</div>`;
+    addMessage('ai', h);
+    return;
+  }
+
+  // Ambiguity — show clarification options
+  if (data.is_ambiguous && data.clarification_options?.length > 0) {
+    h += `<p style="margin-bottom:8px;font-size:12px;color:var(--muted)">I need a bit more context. What did you mean?</p>
+    <div class="clarify-options">`;
+    data.clarification_options.forEach((opt, i) => {
+      const q = atob ? escA(opt.rewritten_question) : opt.rewritten_question;
+      h += `<button class="clarify-btn" onclick="sendQuestion(${JSON.stringify(opt.rewritten_question)}, ${JSON.stringify(opt.rewritten_question)})">
+        <span class="clarify-num">${i+1}</span>${esc(opt.label)}</button>`;
+    });
+    h += '</div>';
+    addMessage('ai', h);
+    return;
+  }
+
+  // SQL validation error
+  if (data.sql_validation_error) {
+    h += `<div class="error-block" style="margin-bottom:10px">🔒 SQL blocked: ${esc(data.sql_validation_error)}</div>`;
+  }
+
+  // Plan
+  if (data.plan?.length > 0) {
+    h += '<div class="plan-list">';
+    data.plan.forEach((s, i) => h += `<div class="plan-item"><span class="plan-num">${i+1}</span><span>${esc(s)}</span></div>`);
+    h += '</div>';
+  }
+
+  // SQL block
+  if (data.sql) h += buildSqlBlock(data.sql);
+
+  // Query result stats
+  if (data.query_result) {
+    const r = data.query_result;
+    h += `<div style="font-size:10px;color:var(--muted);margin:6px 0">
+      📊 <strong style="color:var(--text)">${fmtNum(r.row_count)}</strong> rows returned · ${r.execution_time_ms}ms
+    </div>`;
+  }
+
+  // Web results
+  if (data.web_results?.length > 0) {
+    h += '<div class="web-results"><div class="web-section-label">🌐 External Sources</div>';
+    data.web_results.slice(0,3).forEach(r => {
+      h += `<div class="web-result-item">
+        <div class="web-result-title">${esc(r.title)}</div>
+        <div class="web-result-url">${esc(r.url)}</div>
+        <div class="web-result-text">${esc(r.content)}</div>
+      </div>`;
+    });
+    h += '</div>';
+  }
+
+  // Forecast
+  if (data.forecast_data) {
+    const f = data.forecast_data;
+    const color = f.direction === 'increase' ? 'var(--green)' : 'var(--coral)';
+    const arrow = f.direction === 'increase' ? '↑' : '↓';
+    h += `<div class="forecast-block">
+      <div class="forecast-label">🔮 Forecast Results</div>
+      <div class="forecast-metric">
+        <div><div class="f-val" style="color:${color}">${arrow} ${Math.abs(f.trend_pct)}%</div><div class="f-label">Expected trend</div></div>
+        <div class="f-ci">${esc(f.confidence_interval)}</div>
+      </div>
+    </div>`;
+  }
+
+  // Insight
+  if (data.insight) {
+    h += `<div class="insight-block">
+      <div class="insight-label">💡 Business Insight</div>
+      <div class="insight-text msg-text">${marked.parse(data.insight)}</div>
+    </div>`;
+  }
+
+  // Execution trace (collapsed)
+  if (data.execution_steps?.length > 0) {
+    const sid = 'steps-' + Date.now();
+    h += `<div class="steps-toggle" onclick="toggleEl('${sid}', this)">▶ Execution trace (${data.execution_steps.length} steps)</div>
+    <div id="${sid}" class="steps-panel" style="display:none">`;
+    data.execution_steps.forEach(s => {
+      h += `<div class="step-item">
+        <span class="step-dot ${s.status==='error'?'error':''}"></span>
+        <span class="step-name">${esc(s.step)}</span>
+        ${s.detail ? `<span class="step-detail">— ${esc(s.detail.slice(0,100))}</span>` : ''}
+      </div>`;
+    });
+    h += '</div>';
+  }
+
+  const msgEl = addMessage('ai', h);
+
+  // Render chart (needs real DOM element)
+  if (data.chart?.data && data.query_result?.row_count > 0) {
+    renderChart(data, msgEl);
+  }
+
+  // Render data table
+  if (data.query_result?.row_count > 0) {
+    renderDataTable(data.query_result, msgEl, originalQ);
+  }
+
+  scrollBottom();
+}
+
+function renderChart(data, msgEl) {
+  const cid = 'chart-' + Date.now();
+  const wrap = document.createElement('div');
+  wrap.className = 'chart-container';
+  wrap.innerHTML = `<div class="chart-header">
+    <span>${chartIcon(data.chart_type)} ${(data.chart_type||'chart').toUpperCase()}</span>
+    <span style="font-size:10px;color:var(--muted)">${esc((data.question||'').slice(0,50))}</span>
+  </div><div id="${cid}" style="height:280px;padding:6px"></div>`;
+  msgEl.querySelector('.msg-content').appendChild(wrap);
+
+  const layout = Object.assign({}, data.chart.layout, {
+    paper_bgcolor: 'rgba(0,0,0,0)',
+    plot_bgcolor: 'rgba(0,0,0,0)',
+    font: { color: '#8b97b0', family: 'Inter,sans-serif', size: 10 },
+    height: 260,
+    margin: { t: 16, l: 46, r: 12, b: 46 },
+    legend: { font: { size: 10 }, orientation: 'h', y: -0.25 },
+  });
+
+  Plotly.newPlot(document.getElementById(cid), data.chart.data, layout, {
+    responsive: true, displayModeBar: false,
+  });
+}
+
+function renderDataTable(result, msgEl, question) {
+  if (!result?.row_count) return;
+  const maxRows = 15;
+  const rows = result.data.slice(0, maxRows);
+
+  let tbl = `<table class="data-table"><thead><tr>`;
+  result.columns.forEach(c => tbl += `<th>${esc(String(c))}</th>`);
+  tbl += `</tr></thead><tbody>`;
+  rows.forEach(row => {
+    tbl += '<tr>';
+    row.forEach(cell => tbl += `<td>${cell === null ? '<span style="color:var(--muted);font-style:italic">null</span>' : esc(String(cell))}</td>`);
+    tbl += '</tr>';
+  });
+  tbl += `</tbody></table>
+  <div class="table-footer">
+    <span>Showing ${rows.length} of ${fmtNum(result.row_count)} rows · ${result.columns.length} cols</span>
+    <button class="export-btn" onclick="exportCSV(${JSON.stringify(result)}, ${JSON.stringify((question||'query').slice(0,30))})">⬇ Export CSV</button>
+  </div>`;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'data-table-wrap';
+  wrap.innerHTML = tbl;
+  msgEl.querySelector('.msg-content').appendChild(wrap);
+}
+
+// ─── Export CSV ───────────────────────────────────────────────────────────────
+function exportCSV(result, filename) {
+  const header = result.columns.join(',');
+  const rows = result.data.map(row =>
+    row.map(cell => {
+      if (cell === null) return '';
+      const s = String(cell);
+      return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s.replace(/"/g,'""')}"` : s;
+    }).join(',')
+  );
+  const csv = [header, ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `${filename.replace(/[^a-z0-9]/gi,'_')}_${Date.now()}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+  toast('CSV exported!', 'success');
+}
+
+// ─── Sidebar panels ───────────────────────────────────────────────────────────
+function renderDatasetPanel(data) {
+  const { tables, profile_summary, filename } = data;
+  const score = profile_summary.avg_quality_score;
+  let h = `<div class="sidebar-section-label">📁 Current Dataset</div>
+  <div class="dataset-panel">
+    <div class="dataset-name">📊 ${esc(filename)}</div>
+    <div class="dataset-stat"><span>Rows</span><span>${fmtNum(profile_summary.total_rows)}</span></div>
+    <div class="dataset-stat"><span>Columns</span><span>${profile_summary.total_columns}</span></div>
+    <div class="dataset-stat"><span>Tables</span><span>${profile_summary.total_tables}</span></div>
+    <div class="dataset-stat"><span>Quality Score</span><span style="color:${scoreColor(score)}">${score}/100</span></div>
+    <div class="quality-bar"><div class="quality-fill" style="width:${score}%;background:${scoreColor(score)}"></div></div>
+  </div>`;
+
+  tables.forEach(t => {
+    h += `<div class="sidebar-section-label" style="padding-top:6px">📋 ${esc(t.table_name)}</div>
+    <div class="dataset-panel">
+      <div class="dataset-stat"><span>Rows</span><span>${fmtNum(t.rows)}</span></div>
+      <div class="dataset-stat"><span>Columns</span><span>${t.columns}</span></div>
+      <div class="dataset-stat"><span>Missing</span><span style="color:${t.missing_pct>5?'var(--coral)':'var(--green)'}">${t.missing_pct}%</span></div>
+      <div class="dataset-stat"><span>Duplicates</span><span style="color:${t.duplicate_pct>1?'var(--amber)':'var(--green)'}">${t.duplicate_pct}%</span></div>
+    </div>`;
+  });
+
+  document.getElementById('panel-dataset').innerHTML = h;
+}
+
+function renderSchemaPanel(tables) {
+  let h = '';
+  tables.forEach(t => {
+    h += `<div class="schema-table-label">🗄️ ${esc(t.table_name)}</div>`;
+    const types = t.column_types || {};
+    Object.entries(types).forEach(([col, type]) => {
+      h += `<div class="schema-col-row">
+        <span class="schema-col-name">${esc(col)}</span>
+        <span class="schema-col-type type-${type}">${type}</span>
+      </div>`;
+    });
+  });
+  document.getElementById('panel-schema').innerHTML = h || '<div style="padding:16px;font-size:12px;color:var(--muted)">No schema available.</div>';
+}
+
+function addToHistory(q, classification) {
+  S.history.unshift({ q, classification, time: new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) });
+  renderHistoryPanel();
+}
+
+function renderHistoryPanel() {
+  const cls = { DATABASE: { cls: 'badge-db', ico: '🗄️' }, WEB: { cls: 'badge-web', ico: '🌐' }, HYBRID: { cls: 'badge-hybrid', ico: '🔗' } };
+  let h = S.history.length === 0
+    ? '<div style="padding:16px;font-size:12px;color:var(--muted)">No queries yet.</div>'
+    : S.history.map((item, i) => {
+        const c = cls[item.classification] || { cls: 'badge-db', ico: '❓' };
+        return `<div class="history-item ${i===0?'active':''}" onclick="document.getElementById('question-input').value=${JSON.stringify(item.q)};document.getElementById('question-input').focus()">
+          <span class="history-class badge ${c.cls}">${c.ico}</span>
+          <div><div class="history-q">${esc(item.q)}</div><div style="font-size:9px;color:var(--muted);margin-top:2px">${item.time}</div></div>
+        </div>`;
+      }).join('');
+  document.getElementById('panel-history').innerHTML = h;
+}
+
+async function updateStatsPanel() {
+  if (!S.sessionId) return;
+  try {
+    const res = await fetch(`${API_BASE}/observe/stats/${S.sessionId}`);
+    if (!res.ok) return;
+    const d = await res.json();
+    const bd = d.classification_breakdown || {};
+    let h = `<div class="sidebar-section-label">📊 Session Stats</div>
+    <div class="stat-row"><span>Total queries</span><span class="stat-row-val">${d.total_queries}</span></div>
+    <div class="stat-row"><span>Avg latency</span><span class="stat-row-val">${d.avg_latency_ms}ms</span></div>
+    <div class="stat-row"><span>Rows fetched</span><span class="stat-row-val">${fmtNum(d.total_rows_fetched)}</span></div>
+    <div class="stat-row"><span>LLM calls</span><span class="stat-row-val">${d.total_llm_calls}</span></div>
+    <div class="stat-row"><span>Cache hits</span><span class="stat-row-val">${d.cached_hits}</span></div>
+    <div class="stat-row"><span>Errors</span><span class="stat-row-val" style="color:${d.error_count>0?'var(--coral)':'var(--green)'}">${d.error_count}</span></div>`;
+    if (Object.keys(bd).length > 0) {
+      h += `<div class="sidebar-section-label" style="margin-top:4px">Classification breakdown</div>`;
+      Object.entries(bd).forEach(([k,v]) => {
+        h += `<div class="stat-row"><span>${k}</span><span class="stat-row-val">${v}</span></div>`;
+      });
+    }
+    document.getElementById('panel-stats').innerHTML = h;
+  } catch (_) {}
+}
+
+function switchTab(name) {
+  S.currentTab = name;
+  ['dataset','schema','history','stats'].forEach(t => {
+    document.getElementById(`tab-${t}`).classList.toggle('active', t === name);
+    document.getElementById(`panel-${t}`).style.display = t === name ? 'block' : 'none';
+  });
+  if (name === 'history') renderHistoryPanel();
+  if (name === 'stats') updateStatsPanel();
+}
+
+// ─── UI Helpers ───────────────────────────────────────────────────────────────
+function addMessage(role, htmlContent) {
+  const msgs = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = `msg ${role} fade-up`;
+  div.innerHTML = `<div class="msg-avatar ${role}">${role==='ai'?'⚡':'👤'}</div><div class="msg-content">${htmlContent}</div>`;
+  msgs.appendChild(div);
+  scrollBottom();
+  return div;
+}
+
+function addThinking() {
+  const id = 'think-' + Date.now();
+  const msgs = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'msg ai fade-up'; div.id = id;
+  div.innerHTML = `<div class="msg-avatar ai">⚡</div><div class="msg-content"><div class="thinking"><div class="thinking-dots"><div class="thinking-dot"></div><div class="thinking-dot"></div><div class="thinking-dot"></div></div><span>Analysing…</span></div></div>`;
+  msgs.appendChild(div);
+  scrollBottom();
+  return id;
+}
+
+function removeThinking(id) { const e = document.getElementById(id); if (e) e.remove(); }
+
+function buildSqlBlock(sql) {
+  const id = 'sql-' + Date.now();
+  const hl = sql
+    .replace(/\b(SELECT|FROM|WHERE|GROUP\s+BY|ORDER\s+BY|HAVING|JOIN|LEFT|RIGHT|INNER|OUTER|ON|AS|AND|OR|NOT|IN|LIKE|BETWEEN|LIMIT|OFFSET|UNION|WITH|CASE|WHEN|THEN|ELSE|END|DISTINCT|COALESCE|LOWER|UPPER|CAST|NULL|IS|ASC|DESC)\b/gi, '<span class="sql-kw">$&</span>')
+    .replace(/\b(COUNT|SUM|AVG|MIN|MAX|ROUND|LENGTH|SUBSTR|STRFTIME|DATE|NOW)\b/gi, '<span class="sql-fn">$&</span>')
+    .replace(/('[^']*')/g, '<span class="sql-str">$1</span>')
+    .replace(/\b(\d+\.?\d*)\b/g, '<span class="sql-num">$1</span>');
+  return `<div class="sql-block" id="${id}">
+    <div class="sql-header"><span>🔍 Generated SQL</span>
+      <div class="sql-actions">
+        <button class="sql-action-btn" onclick="copySql('${id}')">📋 Copy</button>
+        <button class="sql-action-btn" onclick="editSql('${id}')">✏️ Edit &amp; Run</button>
+      </div>
+    </div>
+    <div class="sql-code" id="${id}-code">${hl}</div>
+  </div>`;
+}
+
+function copySql(id) {
+  const el = document.getElementById(`${id}-code`);
+  if (!el) return;
+  navigator.clipboard.writeText(el.innerText).then(() => toast('SQL copied!', 'success'));
+}
+
+function editSql(id) {
+  const el = document.getElementById(`${id}-code`);
+  if (!el) return;
+  const sql = el.innerText;
+  document.getElementById('question-input').value = sql;
+  document.getElementById('question-input').focus();
+  autoResize(document.getElementById('question-input'));
+  toast('SQL pasted into input — edit and press Enter to run', 'success');
+}
+
+function toggleEl(id, btn) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const open = el.style.display !== 'none';
+  el.style.display = open ? 'none' : 'block';
+  btn.textContent = btn.textContent.replace(open ? '▼' : '▶', open ? '▶' : '▼');
+}
+
+function renderSuggestions() {
+  document.getElementById('suggestions-row').innerHTML =
+    SUGGESTIONS.map(s => `<div class="chip" onclick="sendQuestion(${JSON.stringify(s)})">${s}</div>`).join('');
+}
+
+function clearSuggestions() { document.getElementById('suggestions-row').innerHTML = ''; }
+
+function setActiveTable(name) { S.activeTable = name; }
+
+function newSession() {
+  S = { sessionId:null, tables:[], activeTable:null, profileSummary:{}, schemaData:[], history:[], loading:false, currentTab:'dataset' };
+  document.getElementById('upload-zone').style.display = 'flex';
+  document.getElementById('chat-zone').style.display = 'none';
+  document.getElementById('messages').innerHTML = '';
+  document.getElementById('panel-dataset').innerHTML = '';
+  document.getElementById('panel-schema').innerHTML = '';
+  document.getElementById('panel-history').innerHTML = '';
+  document.getElementById('panel-stats').innerHTML = '';
+  document.getElementById('sidebar-tabs').style.display = 'none';
+  document.getElementById('table-selector').style.display = 'none';
+  document.getElementById('file-input').value = '';
+}
+
+function clearChat() {
+  if (!confirm('Clear chat history?')) return;
+  document.getElementById('messages').innerHTML = '';
+  S.history = [];
+  if (S.sessionId) fetch(`${API_BASE}/query/history/${S.sessionId}`, { method: 'DELETE' });
+  renderHistoryPanel();
+  toast('Chat cleared', 'success');
+}
+
+function scrollBottom() {
+  const msgs = document.getElementById('messages');
+  setTimeout(() => msgs.scrollTop = msgs.scrollHeight, 60);
+}
+
+function handleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendQuestion(); } }
+
+function autoResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 120) + 'px'; }
+
+// ─── Progress ─────────────────────────────────────────────────────────────────
+let _prog = null;
+function showProgress(msg, pct) {
+  if (!_prog) { _prog = document.createElement('div'); _prog.className = 'progress-overlay'; document.body.appendChild(_prog); }
+  _prog.innerHTML = `<div style="font-size:12px;font-weight:500">${msg}</div><div class="progress-bar"><div class="progress-fill" id="pbar" style="width:${pct}%"></div></div>`;
+}
+function updateProgress(pct) { const b = document.getElementById('pbar'); if (b) b.style.width = pct + '%'; }
+function hideProgress() { if (_prog) { _prog.remove(); _prog = null; } }
+
+// ─── Toast ────────────────────────────────────────────────────────────────────
+function toast(msg, type = '') {
+  const t = document.createElement('div');
+  t.className = `toast ${type}`; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+// ─── Utils ────────────────────────────────────────────────────────────────────
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escA(s) { return String(s).replace(/'/g,"\\'").replace(/\n/g,' '); }
+function fmtNum(n) { return Number(n).toLocaleString(); }
+function scoreColor(s) { return s >= 80 ? 'var(--green)' : s >= 60 ? 'var(--amber)' : 'var(--coral)'; }
+function chartIcon(t) { return { line:'📈', bar:'📊', pie:'🥧', scatter:'⚡', table:'📋' }[t] || '📈'; }
+
+
+// ─── Server-side Export (full dataset, not just visible rows) ─────────────────
+function exportFullTable(sessionId, tableName, format) {
+  const url = `${API_BASE}/clean/export/${sessionId}/${tableName}?format=${format}`;
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${tableName}.${format === 'excel' ? 'xlsx' : 'csv'}`;
+  a.click();
+  toast(`Downloading ${tableName}.${format === 'excel' ? 'xlsx' : 'csv'}…`, 'success');
+}
+
+// ─── Clean Data ───────────────────────────────────────────────────────────────
+async function cleanTable(strategy = 'auto') {
+  if (!S.sessionId || !S.activeTable) return;
+  try {
+    const res = await fetch(`${API_BASE}/clean/${S.sessionId}/${S.activeTable}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ strategy, coerce_types: true }),
+    });
+    if (!res.ok) throw new Error((await res.json()).detail);
+    const data = await res.json();
+    const r = data.cleaning_report;
+    const ops = r.operations.join('\n• ');
+    addMessage('ai', `<div class="insight-block">
+      <div class="insight-label">🧹 Data Cleaning Report — ${esc(S.activeTable)}</div>
+      <div class="insight-text">
+        <strong>Strategy:</strong> ${esc(strategy)}<br/>
+        <strong>Rows removed:</strong> ${r.rows_removed} &nbsp;|&nbsp;
+        <strong>Values imputed:</strong> ${r.values_imputed} &nbsp;|&nbsp;
+        <strong>Missing remaining:</strong> ${r.missing_remaining}<br/>
+        <strong>Operations (${r.operations.length}):</strong><br/>
+        <span style="font-size:11px;color:var(--muted)">• ${esc(ops)}</span>
+      </div>
+    </div>`);
+    toast('Data cleaned successfully!', 'success');
+  } catch (err) {
+    toast('Clean failed: ' + err.message, 'error');
+  }
+}
+
+// ─── Detect Outliers ──────────────────────────────────────────────────────────
+async function detectOutliers() {
+  if (!S.sessionId || !S.activeTable) return;
+  try {
+    const res = await fetch(`${API_BASE}/clean/${S.sessionId}/${S.activeTable}/outliers?method=iqr`);
+    if (!res.ok) throw new Error((await res.json()).detail);
+    const data = await res.json();
+    const outliers = data.outliers;
+    if (Object.keys(outliers).length === 0) {
+      addMessage('ai', `<div class="insight-block"><div class="insight-label">✅ No Outliers Found</div><div class="insight-text">All numeric columns are within normal IQR bounds in <strong>${esc(S.activeTable)}</strong>.</div></div>`);
+      return;
+    }
+    let h = `<div class="insight-block"><div class="insight-label">⚠️ Outliers Detected — ${esc(S.activeTable)}</div><div class="insight-text">`;
+    Object.entries(outliers).forEach(([col, info]) => {
+      h += `<div style="margin-bottom:8px;padding:8px;background:rgba(244,63,94,0.05);border-radius:6px;border:1px solid rgba(244,63,94,0.15)">
+        <strong style="color:var(--coral)">${esc(col)}</strong>
+        <span style="color:var(--muted);font-size:11px"> — ${info.outlier_count} outliers (${info.outlier_pct}%)</span><br/>
+        <span style="font-size:11px;color:var(--muted)">Bounds: [${info.lower_bound}, ${info.upper_bound}] &nbsp;|&nbsp; Examples: ${info.example_values.join(', ')}</span>
+      </div>`;
+    });
+    h += '</div></div>';
+    addMessage('ai', h);
+  } catch (err) {
+    toast('Outlier detection failed: ' + err.message, 'error');
+  }
+}
+
+// ─── Dataset Actions Panel (injected into sidebar) ────────────────────────────
+function renderDatasetActions() {
+  if (!S.sessionId || !S.activeTable) return '';
+  return `
+    <div class="sidebar-section-label" style="margin-top:4px">⚙️ Actions</div>
+    <div style="padding:0 12px 12px;display:flex;flex-direction:column;gap:6px">
+      <button class="sidebar-btn" onclick="cleanTable('auto')" title="Auto-clean: impute nulls, remove duplicates">🧹 Auto-clean data</button>
+      <button class="sidebar-btn" onclick="detectOutliers()" title="IQR outlier detection on all numeric columns">🔍 Detect outliers</button>
+      <button class="sidebar-btn" onclick="exportFullTable('${S.sessionId}','${S.activeTable}','csv')" title="Download full table as CSV">⬇ Export CSV</button>
+      <button class="sidebar-btn" onclick="exportFullTable('${S.sessionId}','${S.activeTable}','excel')" title="Download full table as Excel">⬇ Export Excel</button>
+    </div>`;
+}
+
+// ─── Enrich dataset panel with actions ────────────────────────────────────────
+const _origRenderDatasetPanel = renderDatasetPanel;
+renderDatasetPanel = function(data) {
+  _origRenderDatasetPanel(data);
+  const panel = document.getElementById('panel-dataset');
+  panel.innerHTML += renderDatasetActions();
+};
+
+
+// ─── Clean Data ───────────────────────────────────────────────────────────────
+async function cleanTable(sessionId, tableName) {
+  if (!confirm(`Clean "${tableName}"?\nThis will impute missing values, remove duplicates, and fix types.`)) return;
+  toast('Cleaning data…');
+  try {
+    const res = await fetch(`${API_BASE}/clean/${sessionId}/${tableName}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ strategy: 'auto', coerce_types: true }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Clean failed');
+    const r = data.cleaning_report;
+    const ops = (r.operations || []).join(', ') || 'none';
+    toast(`✅ Cleaned: ${r.rows_removed_duplicates||0} dupes removed, ${r.cells_imputed||0} cells filled`, 'success');
+    addMessage('ai', `<div class="msg-meta"><span class="badge badge-db">🧹 CLEANED</span></div>
+      <p style="margin-bottom:8px">Data cleaning complete for <strong>${esc(tableName)}</strong>:</p>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-val">${r.rows_removed_duplicates||0}</div><div class="stat-label">Dupes removed</div></div>
+        <div class="stat-card"><div class="stat-val">${r.cells_imputed||0}</div><div class="stat-label">Cells imputed</div></div>
+        <div class="stat-card"><div class="stat-val">${r.types_coerced||0}</div><div class="stat-label">Types fixed</div></div>
+      </div>
+      <p style="margin-top:8px;font-size:12px;color:var(--muted)">Operations: ${esc(ops)}</p>`);
+  } catch (err) {
+    toast('Clean failed: ' + err.message, 'error');
+  }
+}
+
+// ─── Server-side export (full table, not just displayed rows) ─────────────────
+function exportTable(sessionId, tableName, format) {
+  const url = `${API_BASE}/clean/export/${sessionId}/${tableName}?format=${format}`;
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '';
+  a.click();
+  toast(`Downloading ${tableName}.${format === 'csv' ? 'csv' : 'xlsx'}…`, 'success');
+}
+
+// ─── Outlier detection ────────────────────────────────────────────────────────
+async function detectOutliers(sessionId, tableName) {
+  try {
+    const res = await fetch(`${API_BASE}/clean/${sessionId}/${tableName}/outliers?method=iqr`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail);
+    if (data.total_affected_columns === 0) {
+      addMessage('ai', `<div class="insight-block"><div class="insight-label">🎯 Outlier Report</div><div class="insight-text">No outliers detected in numeric columns of <strong>${esc(tableName)}</strong> using IQR method.</div></div>`);
+      return;
+    }
+    let h = `<div class="msg-meta"><span class="badge badge-forecast">🎯 OUTLIERS</span></div>
+      <p style="margin-bottom:10px">Outliers detected in <strong>${esc(tableName)}</strong>:</p>`;
+    Object.entries(data.outliers).forEach(([col, info]) => {
+      h += `<div class="schema-col-row" style="border-radius:6px;border:1px solid var(--border);margin-bottom:4px;padding:8px 12px">
+        <span class="schema-col-name">${esc(col)}</span>
+        <span style="font-size:11px;color:var(--muted)">${info.count} outliers · range [${info.lower_bound?.toFixed(2)}, ${info.upper_bound?.toFixed(2)}]</span>
+      </div>`;
+    });
+    addMessage('ai', h);
+  } catch (err) {
+    toast('Outlier detection failed: ' + err.message, 'error');
+  }
+}
+
+// ─── MCP tool invocation from frontend ───────────────────────────────────────
+async function invokeMCPTool(toolName, params) {
+  if (!S.sessionId) { toast('No active session', 'error'); return; }
+  try {
+    const res = await fetch(`${API_BASE}/mcp/invoke`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: S.sessionId, tool_name: toolName, parameters: params }),
+    });
+    return await res.json();
+  } catch (err) {
+    toast('MCP tool error: ' + err.message, 'error');
+    return null;
+  }
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  fetch(`${API_BASE}/health`)
+    .then(r => r.ok ? null : Promise.reject())
+    .catch(() => { document.getElementById('backend-notice').style.display = 'block'; });
+});
+</script>
+</body>
+</html>
