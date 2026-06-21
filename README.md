@@ -4,49 +4,45 @@
 
 ---
 
-## 🏗️ Architecture Review & Improvements Over Original Plan
+## 🏗️ Core Architecture & Design Decisions
 
-Your original plan was excellent. Here's what we improved and why:
+This project is built with a focus on performance, security, and scalability. Here are the key architectural choices:
 
-### ✅ Kept from your plan
+### ✅ Implemented Features
 | Phase | Decision | Status |
 |---|---|---|
-| Data Ingestion (CSV/Excel/SQLite) | MVP scope correct | ✅ Implemented |
+| Data Ingestion (CSV/Excel/SQLite) | Comprehensive data source support | ✅ Implemented |
 | Data Profiling | Critical differentiator | ✅ Full quality scoring |
-| Schema Intelligence | Business meaning mapping | ✅ MongoDB storage |
-| RAG Knowledge Base | Prevents SQL hallucination | ✅ RAG text generation |
+| Schema Intelligence | Business meaning mapping | ✅ SQLite storage |
+| RAG Knowledge Base | Prevents SQL hallucination | ✅ FAISS semantic search |
 | SQL Generation + Validation | Security-first approach | ✅ sqlglot + allowlist |
 | Chart Engine | Auto-selection logic | ✅ 5 chart types |
-| Business Insight Engine | Goes beyond competitors | ✅ Gemini narration |
-| Question Classifier | Prevents web overuse | ✅ DATABASE/WEB/HYBRID |
-| Memory System | Follow-up questions | ✅ MongoDB persistence |
-| Agent Planner | Truly agentic | ✅ Step-by-step plans |
+| Business Insight Engine | Goes beyond standard analytics | ✅ Gemini narration |
+| Question Classifier | Intelligent routing | ✅ DATABASE/WEB/HYBRID |
+| Memory System | Contextual follow-ups | ✅ SQLite persistence |
+| Agent Planner | Truly agentic workflow | ✅ LangGraph orchestration |
 | Clarification Agent | Handles ambiguity | ✅ JSON-structured options |
 | Forecasting Engine | Prophet time-series | ✅ Auto period detection |
-| MCP Tools | Tool exposure | ✅ 6 tools defined |
-| Observability | Dynatrace integration | ✅ SQLAlchemy logs |
+| MCP Tools | Extensible tool design | ✅ 6 tools defined |
+| Observability | Comprehensive logging | ✅ SQLAlchemy logs |
 
-### 🔧 Drawbacks fixed / improvements made
+### 🔧 Architectural Highlights
 
-1. **DuckDB instead of pandas-only SQL** — Your plan used SQLite for query execution which is slow on large DataFrames. We use DuckDB (in-memory columnar) with SQLite fallback. 10-100x faster on typical business data.
+1. **DuckDB SQL Engine** — Uses DuckDB (in-memory columnar) with SQLite fallback for query execution, ensuring fast processing on large datasets compared to standard pandas processing.
 
-2. **Parquet persistence** — Your plan stored session data in memory (`session_data`). We persist to Parquet files keyed by session ID. Survives server restarts.
+2. **Parquet Persistence** — Session data is persisted to Parquet files keyed by session ID, allowing the system to survive server restarts efficiently.
 
-3. **Cache layer** — Query results cached by SHA-256 hash of (session_id + SQL). Subsequent identical queries return instantly.
+3. **Cache Layer** — Query results are cached by SHA-256 hash of (session_id + SQL). Subsequent identical queries return instantly.
 
-4. **Prophet auto-detection** — We auto-detect the best (date_col, value_col) pair instead of requiring the user to specify them.
+4. **Prophet Auto-Detection** — Automatically detects the optimal (date_col, value_col) pair for time-series forecasting without requiring manual user input.
 
-5. **SQL injection beyond sqlglot** — Added regex-based keyword blocking as a second layer before sqlglot parsing.
+5. **Multi-Layer SQL Security** — Employs regex-based keyword blocking as a primary layer before sqlglot AST parsing to prevent destructive operations.
 
-6. **Quality score** — Quantified data quality (0–100) based on missing values, duplicates, and dataset size. Shows in the UI immediately after upload.
+6. **Automated Quality Scoring** — Quantifies data quality (0–100) based on missing values, duplicates, and dataset size, providing immediate feedback in the UI upon upload.
 
-7. **Async everywhere** — All DB calls, LLM calls, and web search are async. No blocking the event loop.
+7. **Async-First Design** — All DB calls, LLM requests, and external searches are fully asynchronous, ensuring high concurrency without blocking the event loop.
 
-8. **MCP executor class** — Phase 16 is a proper `MCPToolExecutor` class, not just a list of tool definitions.
-
-9. **Missing: Redis caching** — Your plan mentioned Redis. We use in-process dict for MVP simplicity. Replace `_query_cache` in `sql_engine.py` with Redis for production multi-worker deployments.
-
-10. **Missing: LangGraph** — Your plan mentioned LangGraph. We implemented an equivalent step-based orchestrator natively. LangGraph adds overhead for a focused use case like this — migrate to it if you need parallel tool execution or complex state machines.
+8. **LangGraph Orchestration** — Uses LangGraph to manage complex state transitions and conditional routing for the agentic reasoning loop.
 
 ---
 
@@ -286,7 +282,7 @@ Interactive API docs: `http://localhost:8000/docs`
 
 ## 🏆 Hackathon Differentiators
 
-1. **Data Profiling** — Most competitors skip this. We score data quality immediately on upload.
+1. **Data Profiling** — Most competitors skip this. Data quality is scored immediately on upload.
 2. **Security-first SQL** — Two-layer validation (regex + sqlglot AST). No DDL ever executes.
 3. **Truly agentic** — Question → Classify → Plan → Tools → Synthesise. Not just prompt → answer.
 4. **Hybrid evidence** — Internal data and external web search kept separate in the response.
