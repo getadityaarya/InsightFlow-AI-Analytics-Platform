@@ -341,10 +341,8 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);overflo
 
 <script>
 // ─── Config ───────────────────────────────────────────────────────────────────
-// Detect API base: if served through nginx proxy use relative /api, else localhost
-const API_BASE = (window.location.port === '80' || window.location.port === '')
-  ? '/api'
-  : 'http://localhost:8000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE = `${API_URL}/api`;
 
 // ─── State ────────────────────────────────────────────────────────────────────
 let S = {
