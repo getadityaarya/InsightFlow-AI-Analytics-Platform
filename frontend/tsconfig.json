@@ -10,5 +10,5 @@
     "allowJs": true,
     "noEmit": true
   },
-  "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.html"]
+  "include": ["src", "**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.html"]
 }
