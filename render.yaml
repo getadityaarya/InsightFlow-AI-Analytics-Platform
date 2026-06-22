@@ -1,10 +1,11 @@
 services:
-  # Backend Service
+  # ── Backend Service ────────────────────────────────────────────────────────
   - type: web
     name: insightflow-backend
     env: docker
     dockerContext: ./backend
     dockerfilePath: ./backend/Dockerfile
+    plan: free
     healthCheckPath: /api/health
     envVars:
       - key: GEMINI_API_KEY
@@ -16,10 +17,9 @@ services:
       - key: CORS_ORIGINS
         value: '["*"]'
 
-  # Frontend Static Site
-  - type: web
+  # ── Frontend Static Site ───────────────────────────────────────────────────
+  - type: static_site
     name: insightflow-frontend
-    env: static
     rootDir: frontend
     buildCommand: "sed -i 's|http://localhost:8000/api|'${VITE_API_URL}'|g' index.html && npm install && npm run build"
     staticPublishPath: dist
