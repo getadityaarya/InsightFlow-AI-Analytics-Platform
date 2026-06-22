@@ -11,9 +11,9 @@
 <style>
 :root{--bg:#080c14;--surface:#0d1321;--surface2:#111827;--surface3:#1a2234;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);--text:#f0f4ff;--muted:#8b97b0;--accent:#4f9cf9;--accent2:#7c3aed;--teal:#14b8a6;--coral:#f43f5e;--amber:#f59e0b;--green:#22c55e;--font-display:'Syne',sans-serif;--font-body:'Inter',sans-serif;--font-mono:'IBM Plex Mono',monospace;--radius:12px;--radius-sm:8px;--sidebar-w:300px}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
-body{font-family:var(--font-body);background:var(--bg);color:var(--text);overflow:hidden;-webkit-font-smoothing:antialiased}
-#app{display:flex;height:100vh}
+html,body{min-height:100vh;overflow-y:auto}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;padding:2rem;margin-bottom:3rem}
+#app{display:flex;min-height:100vh;min-height:0}
 .grid-bg{position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(rgba(79,156,249,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(79,156,249,0.03) 1px,transparent 1px);background-size:40px 40px}
 .glow-orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(120px);opacity:.12}
 .glow-1{width:600px;height:600px;background:#4f9cf9;top:-200px;left:-100px}
@@ -289,19 +289,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);overflo
       <div class="upload-hero">
         <h1>Chat with your data.</h1>
         <p>Upload any business dataset and ask questions in plain English.<br/>InsightFlow AI generates SQL, charts, forecasts, and insights — automatically.</p>
-        <div class="drop-zone" id="drop-zone"
-          ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)"
-          ondrop="handleDrop(event)" onclick="document.getElementById('file-input').click()">
-          <div class="drop-icon">📊</div>
-          <div class="drop-title">Drop your dataset here</div>
-          <div class="drop-sub">CSV · Excel · SQLite — up to 100 MB</div>
-          <div class="file-types">
-            <span class="file-badge">CSV</span>
-            <span class="file-badge">XLSX</span>
-            <span class="file-badge">SQLite</span>
-          </div>
-          <button class="upload-btn" onclick="event.stopPropagation();document.getElementById('file-input').click()">📂 Choose File</button>
-        </div>
+        <div id="upload-react-root"></div>
         <div class="upload-notice" id="backend-notice">⚠️ Backend not running on port 8000 — start your FastAPI server.</div>
         <div class="feature-grid">
           <div class="feature-pill">🧠 SQL Generation</div>
@@ -339,10 +327,10 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);overflo
   </div>
 </div>
 
+<script type="module" src="/src/main.tsx"></script>
 <script>
 // ─── Config ───────────────────────────────────────────────────────────────────
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-const API_BASE = `${API_URL}/api`;
+// API_BASE is now provided by src/api.ts
 
 // ─── State ────────────────────────────────────────────────────────────────────
 let S = {
