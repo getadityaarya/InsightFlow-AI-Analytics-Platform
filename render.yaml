@@ -22,7 +22,7 @@ services:
     name: insightflow-frontend
     env: static
     rootDir: frontend
-    buildCommand: "sed -i 's|http://localhost:8000/api|'${VITE_API_URL}'|g' index.html && npm install && npm run build"
+    buildCommand: "npm install && npm run build"
     staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
