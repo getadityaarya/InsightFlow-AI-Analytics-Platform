@@ -1,27 +1,25 @@
 services:
-  # ── Backend Service ────────────────────────────────────────────────────────
+  # Backend Service
   - type: web
     name: insightflow-backend
     env: docker
     dockerContext: ./backend
     dockerfilePath: ./backend/Dockerfile
-    plan: free
     healthCheckPath: /api/health
     envVars:
       - key: GEMINI_API_KEY
-        sync: false # Render will prompt you for this value
+        sync: false
       - key: TAVILY_API_KEY
-        sync: false # Render will prompt you for this value (optional, for web search)
+        sync: false
       - key: DATABASE_URL
         value: sqlite+aiosqlite:///./insightflow.db
       - key: CORS_ORIGINS
-        value: '["*"]' # Allow all origins for MVP. For production, restrict to frontend URL.
+        value: '["*"]'
 
-  # ── Frontend Static Site ───────────────────────────────────────────────────
+  # Frontend Static Site
   - type: web
     name: insightflow-frontend
     env: static
-    plan: free
     rootDir: frontend
     buildCommand: "sed -i 's|http://localhost:8000/api|'${VITE_API_URL}'|g' index.html && npm install && npm run build"
     staticPublishPath: dist
