@@ -5,7 +5,7 @@ services:
     env: docker
     dockerContext: ./backend
     dockerfilePath: ./backend/Dockerfile
-    plan: starter # Starter plan recommended for enough RAM (Prophet/Pandas)
+    plan: free
     healthCheckPath: /api/health
     envVars:
       - key: GEMINI_API_KEY
